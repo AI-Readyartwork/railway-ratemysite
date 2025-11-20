@@ -1,1 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}RateMySite — Live Compare{% endblock %}</title>
+  <meta name="description" content="Analyze and compare multiple websites using RateMySite with real-time results and Excel export functionality.">
+  <meta name="keywords" content="website analysis, site comparison, rate my site, web analytics">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="RateMySite Live Compare">
+  <meta property="og:description" content="Analyze and compare multiple websites with real-time results">
+  <meta property="og:url" content="{{ request.url }}">
+  
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>{% block header_title %}RateMySite — Live Compare{% endblock %}</h1>
+      <p class="sub">
+        {% block header_subtitle %}
+        Enter up to four URLs. You'll see progress and each site's column appear as it finishes. 
+        Download results as Excel when complete.
+        {% endblock %}
+      </p>
+    </header>
 
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="foot">
+      <div class="footer-links">
+        <a href="https://www.ratemysite.xyz/" target="_blank" rel="noopener">RateMySite.xyz</a>
+        <a href="/health">Health Check</a>
+        <a href="https://github.com" target="_blank" rel="noopener">Source Code</a>
+      </div>
+      <small>Demo app. Output is parsed best-effort from RateMySite with real-time debugging and Excel export.</small>
+      <small>Built for Railway deployment • Press F12 and check console for keyboard shortcuts</small>
+    </footer>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
