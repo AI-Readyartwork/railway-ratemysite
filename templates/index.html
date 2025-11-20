@@ -1,1 +1,185 @@
+{% extends "base.html" %}
 
+{% block content %}
+<form id="form" class="card" onsubmit="return false;">
+  <div class="grid">
+    <label>Link 1
+      <input type="url" id="u1" placeholder="https://example.com" autocomplete="url">
+    </label>
+    <label>Link 2
+      <input type="url" id="u2" placeholder="https://google.com" autocomplete="url">
+    </label>
+    <label>Link 3
+      <input type="url" id="u3" placeholder="https://github.com" autocomplete="url">
+    </label>
+    <label>Link 4
+      <input type="url" id="u4" placeholder="https://stackoverflow.com" autocomplete="url">
+    </label>
+  </div>
+  
+  <div class="actions">
+    <button id="go" type="button">
+      📊 Analyze Sites
+    </button>
+    <button id="stop" type="button" class="muted" disabled>
+      🛑 Stop
+    </button>
+  </div>
+
+  <div id="progress" class="progress hidden">
+    <div class="bar" style="width:0%"></div>
+  </div>
+  <p id="status" class="status"></p>
+</form>
+
+<!-- Download Section (hidden by default) -->
+<div id="download-section" class="card download-section hidden">
+  <div class="download-info">
+    <strong>✅ Analysis Complete!</strong>
+    <small>Results are ready for download as Excel spreadsheet</small>
+  </div>
+  <button id="download" class="download">
+    📊 Download Excel
+  </button>
+</div>
+
+<!-- Results Table -->
+<div class="table-wrap">
+  <table id="compare">
+    <thead>
+      <tr id="thead">
+        <th>Category</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr data-key="Company">
+        <td class="row-head">Company</td>
+      </tr>
+      <tr data-key="URL">
+        <td class="row-head">URL</td>
+      </tr>
+      <tr data-key="Overall Score">
+        <td class="row-head">Overall Score</td>
+      </tr>
+      <tr data-key="Description of Website">
+        <td class="row-head">Description of Website</td>
+      </tr>
+      <tr data-key="Consumer Score">
+        <td class="row-head">Audience Perspective → Consumer</td>
+      </tr>
+      <tr data-key="Developer Score">
+        <td class="row-head">Audience Perspective → Developer</td>
+      </tr>
+      <tr data-key="Investor Score">
+        <td class="row-head">Audience Perspective → Investor</td>
+      </tr>
+      <tr data-key="Clarity Score">
+        <td class="row-head">Technical Criteria → Clarity</td>
+      </tr>
+      <tr data-key="Visual Design Score">
+        <td class="row-head">Technical Criteria → Visual Design</td>
+      </tr>
+      <tr data-key="UX Score">
+        <td class="row-head">Technical Criteria → UX</td>
+      </tr>
+      <tr data-key="Trust Score">
+        <td class="row-head">Technical Criteria → Trust</td>
+      </tr>
+      <tr data-key="Value Prop Score">
+        <td class="row-head">Value Proposition</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Debug Log -->
+<div id="log" class="log card hidden" aria-label="Analysis debug log"></div>
+
+<!-- Help Section -->
+<details class="card" style="margin-top: 24px;">
+  <summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+    📖 How to Use & Keyboard Shortcuts
+  </summary>
+  <div style="padding-top: 12px; color: var(--muted); line-height: 1.6;">
+    <h4 style="margin: 0 0 8px 0; color: var(--fg);">How it works:</h4>
+    <ul style="margin: 0 0 16px 0; padding-left: 20px;">
+      <li>Enter 1-4 website URLs in the form above</li>
+      <li>Click "Analyze Sites" to start the analysis</li>
+      <li>Watch real-time progress as each site is processed</li>
+      <li>View results in the comparison table</li>
+      <li>Download complete results as Excel when finished</li>
+    </ul>
+    
+    <h4 style="margin: 0 0 8px 0; color: var(--fg);">Keyboard Shortcuts:</h4>
+    <ul style="margin: 0; padding-left: 20px;">
+      <li><kbd>Ctrl+Enter</kbd> - Start analysis</li>
+      <li><kbd>Ctrl+S</kbd> or <kbd>Esc</kbd> - Stop analysis</li>
+      <li><kbd>Ctrl+D</kbd> - Download Excel (when available)</li>
+      <li><kbd>Enter</kbd> in URL field - Start analysis</li>
+    </ul>
+    
+    <p style="margin: 16px 0 0 0; font-size: 13px;">
+      💡 Tip: URLs are auto-corrected to include https:// if missing
+    </p>
+  </div>
+</details>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some enhanced UX features
+document.addEventListener('DOMContentLoaded', function() {
+  // Example URLs rotation
+  const exampleSets = [
+    ['https://example.com', 'https://google.com', 'https://github.com', 'https://stackoverflow.com'],
+    ['https://apple.com', 'https://microsoft.com', 'https://amazon.com', 'https://netflix.com'],
+    ['https://airbnb.com', 'https://spotify.com', 'https://dropbox.com', 'https://slack.com'],
+    ['https://tesla.com', 'https://shopify.com', 'https://stripe.com', 'https://zoom.us']
+  ];
+  
+  // Rotate example URLs every 10 seconds if inputs are empty
+  let exampleIndex = 0;
+  const rotateExamples = () => {
+    const inputs = document.querySelectorAll('input[type="url"]');
+    const isEmpty = Array.from(inputs).every(input => !input.value.trim());
+    
+    if (isEmpty) {
+      const currentSet = exampleSets[exampleIndex % exampleSets.length];
+      inputs.forEach((input, i) => {
+        if (currentSet[i]) {
+          input.placeholder = currentSet[i];
+        }
+      });
+      exampleIndex++;
+    }
+  };
+  
+  // Start rotation
+  setInterval(rotateExamples, 10000);
+  
+  // Add visual feedback for form validation
+  const inputs = document.querySelectorAll('input[type="url"]');
+  inputs.forEach(input => {
+    input.addEventListener('input', function() {
+      const value = this.value.trim();
+      if (value) {
+        try {
+          new URL(value.startsWith('http') ? value : 'https://' + value);
+          this.style.borderColor = 'var(--success)';
+          this.style.boxShadow = '0 0 0 2px rgba(34, 197, 94, 0.1)';
+        } catch {
+          this.style.borderColor = 'var(--warning)';
+          this.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, 0.1)';
+        }
+      } else {
+        this.style.borderColor = '';
+        this.style.boxShadow = '';
+      }
+    });
+  });
+  
+  console.log('🚀 RateMySite Live Compare loaded successfully!');
+  console.log('💡 Open the browser console to see keyboard shortcuts');
+});
+</script>
+{% endblock %}
